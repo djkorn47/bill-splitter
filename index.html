@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>หารบิล</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f6f4ef; --card: #ffffff; --ink: #1d1d1b; --muted: #6b6a66;
+      --line: #e4e1d8; --accent: #0f766e; --accent-ink: #ffffff;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #151514; --card: #1f1f1d; --ink: #f1efe9; --muted: #a3a19b;
+        --line: #33322f; --accent: #2dd4bf; --accent-ink: #0b1f1d;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink);
+      font-family: "Noto Sans Thai", system-ui, sans-serif;
+      display: flex; align-items: center; justify-content: center; padding: 16px;
+    }
+    main {
+      width: 100%; max-width: 420px; background: var(--card);
+      border: 1px solid var(--line); border-radius: 18px; padding: 28px 24px;
+    }
+    h1 { margin: 0 0 4px; font-size: 1.6rem; }
+    .sub { margin: 0 0 24px; color: var(--muted); font-size: .9rem; }
+    label { display: block; font-weight: 600; font-size: .9rem; margin: 16px 0 6px; }
+    input {
+      width: 100%; font: inherit; font-size: 1.1rem; padding: 10px 12px;
+      border: 1px solid var(--line); border-radius: 10px;
+      background: var(--bg); color: var(--ink);
+    }
+    input:focus { outline: 2px solid var(--accent); border-color: transparent; }
+    .row { display: flex; gap: 12px; }
+    .row > div { flex: 1; }
+    .result {
+      margin-top: 24px; padding: 18px; border-radius: 14px;
+      background: var(--accent); color: var(--accent-ink); text-align: center;
+    }
+    .result .amount { font-size: 2.2rem; font-weight: 700; line-height: 1.2; }
+    .result .detail { font-size: .85rem; opacity: .85; }
+    footer {
+      margin-top: 20px; font-size: .8rem; color: var(--muted);
+      display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>หารบิล 🧾</h1>
+    <p class="sub">ใส่ยอดรวม จำนวนคน แล้วดูว่าต้องจ่ายคนละเท่าไร</p>
+
+    <label for="total">ยอดรวม (บาท)</label>
+    <input id="total" type="number" inputmode="decimal" min="0" placeholder="เช่น 1250" />
+
+    <div class="row">
+      <div>
+        <label for="people">จำนวนคน</label>
+        <input id="people" type="number" inputmode="numeric" min="1" value="2" />
+      </div>
+      <div>
+        <label for="service">Service charge (%)</label>
+        <input id="service" type="number" inputmode="decimal" min="0" value="10" />
+      </div>
+    </div>
+
+    <label for="vat">VAT (%)</label>
+    <input id="vat" type="number" inputmode="decimal" min="0" value="7" />
+
+    <div class="result">
+      <div class="amount" id="perPerson">฿0.00</div>
+      <div class="detail" id="detail">ต่อคน</div>
+    </div>
+
+    <footer>
+      <span id="server">กำลังเชื่อมต่อ API…</span>
+      <span>Deployed on Vercel</span>
+    </footer>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const fmt = (n) => "฿" + n.toLocaleString("th-TH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    function calc() {
+      const total = parseFloat($("total").value) || 0;
+      const people = Math.max(1, parseInt($("people").value) || 1);
+      const service = parseFloat($("service").value) || 0;
+      const vat = parseFloat($("vat").value) || 0;
+      const withService = total * (1 + service / 100);
+      const grand = withService * (1 + vat / 100);
+      $("perPerson").textContent = fmt(grand / people);
+      $("detail").textContent = `ต่อคน · ยอดสุทธิ ${fmt(grand)} หาร ${people} คน`;
+    }
+    ["total", "people", "service", "vat"].forEach((id) => $(id).addEventListener("input", calc));
+    calc();
+
+    // เรียก serverless function ใน /api/hello เพื่อแสดงว่า backend บน Vercel ทำงาน
+    fetch("/api/hello")
+      .then((r) => r.json())
+      .then((d) => { $("server").textContent = `API ✓ เวลาเซิร์ฟเวอร์ (กรุงเทพฯ) ${d.bangkokTime}`; })
+      .catch(() => { $("server").textContent = "API ยังไม่พร้อม (เปิดแบบไฟล์ธรรมดา)"; });
+  </script>
+</body>
+</html>

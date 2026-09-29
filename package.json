@@ -1,0 +1,9 @@
+{
+  "name": "bill-splitter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ตัวอย่าง web app หารบิล สำหรับ deploy บน Vercel",
+  "scripts": {
+    "dev": "vercel dev"
+  }
+}
